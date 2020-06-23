@@ -2,6 +2,7 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term")
+var languageButtonsEl = document.querySelector("#language-buttons")
 
 var displayRepos = function(repos, searchTerm) {
     if (repos.length === 0) {
@@ -17,10 +18,12 @@ var displayRepos = function(repos, searchTerm) {
     for (var i = 0; i < repos.length; i++) {
         //format repo name
         var repoName = repos[i].owner.login + "/" + repos[i].name;
-
+        var repo = repoName.value;
         // create a container for each repo
-        var repoEl = document.createElement("div");
+        var repoEl = document.createElement("a");
         repoEl.classList = "list-item flex-row justify-space-between align-center"
+        //moves to single-repo html
+        repoEl.setAttribute("href", "./single-repo.html?repo=" + repoName);
 
         //create a span element to hold repository name
         var titleEl = document.createElement("span");
@@ -63,9 +66,26 @@ var getUserRepos = function(user) {
         }else {
             alert("Error: " + response.statusText);         
         }
+    })
+    .catch(function(error) {
+        //notice this '.catch()' getting chaned onto the end of the '.then()'
+        alert("Unable to connect to Github");
     });
 };
 
+var getFeaturedRepos = function(language) {
+    var apiUrl = "https://api.github.com/search/repositories?q=" + language + "is:featured&sort=help-wanted-issues";
+
+    fetch(apiUrl).then(function(response){
+        if (response.ok) {
+            response.json().then(function(data) {
+                displayRepos(data.items, language);
+            });
+        } else {
+            alert("Error: " + response.statusText)
+        }
+    });
+};
 
 
 //handles click of username submission
@@ -84,6 +104,18 @@ var formSubmitHandler =function(event) {
     }
 }
 
+var buttonClickHandler = function(event) {
+    var language = event.target.getAttribute("data-language");
+    if (language) {
+        getFeaturedRepos(language);
+
+        //clear old content
+        repoContainerEl.textContent = "";
+    }
+}
+
 getUserRepos();
 
 userFormEl.addEventListener("submit", formSubmitHandler);
+
+languageButtonsEl.addEventListener("click", buttonClickHandler);
