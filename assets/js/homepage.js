@@ -4,6 +4,10 @@ var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term")
 
 var displayRepos = function(repos, searchTerm) {
+    if (repos.length === 0) {
+        repoContainerEl.textContent = "No repositoies found";
+        return;
+    }
     //reset container
     repoContainerEl.textContent = ""
     // append name searched to page
@@ -51,9 +55,14 @@ var getUserRepos = function(user) {
 
     //make a request to the url
     fetch(apiUrl).then(function(response) {
-        response.json().then(function(data) {
-            displayRepos(data, user);
-        });
+        if (response.ok) {
+            response.json().then(function(data) {
+                displayRepos(data, user);
+        }); 
+
+        }else {
+            alert("Error: " + response.statusText);         
+        }
     });
 };
 
